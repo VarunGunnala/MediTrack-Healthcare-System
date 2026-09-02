@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MediTrack - Live Hospital Queue Board</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { background: #0f172a; color: white; margin: 0; padding: 2rem; }
+    .tv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .token-card { background: #1e293b; border-radius: 12px; padding: 1.5rem; border-left: 6px solid #0284c7; }
+    .token-card.emergency { border-left-color: #e11d48; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .token-num { font-size: 2.4rem; font-weight: 800; color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <h1 style="color: #38bdf8; margin: 0;">🏥 MediTrack Outpatient Live Board</h1>
+      <p style="color: #94a3b8; margin: 0;">Real-time triage queue updates</p>
+    </div>
+    <div id="liveClock" style="font-size: 1.4rem; font-weight: 700; color: #f8fafc;"></div>
+  </div>
+
+  <div class="tv-grid" id="queueBoard">
+    <p>Connecting to hospital queue engine...</p>
+  </div>
+
+  <script>
+    function updateClock() {
+      document.getElementById("liveClock").innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function refreshQueue() {
+      try {
+        const res = await fetch("/queue/api/live_board");
+        const data = await res.json();
+        const container = document.getElementById("queueBoard");
+        container.innerHTML = "";
+
+        if (data.tokens.length === 0) {
+          container.innerHTML = "<p style='color: #94a3b8;'>No active OPD tokens in waiting area.</p>";
+          return;
+        }
+
+        data.tokens.forEach(t => {
+          const div = document.createElement("div");
+          div.className = `token-card ${t.priority_tier === 'Emergency' ? 'emergency' : ''}`;
+          div.innerHTML = `
+            <div class="token-num">${t.token_number}</div>
+            <h3 style="margin: 0.4rem 0 0 0; color: #f8fafc;">${t.patient_name}</h3>
+            <p style="color: #94a3b8; margin: 0.2rem 0;">${t.department}</p>
+            <span class="badge ${t.priority_tier === 'Emergency' ? 'badge-danger' : 'badge-primary'}">${t.priority_tier}</span>
+          `;
+          container.appendChild(div);
+        });
+      } catch (e) {
+        console.error("Queue sync error", e);
+      }
+    }
+    setInterval(refreshQueue, 4000);
+    refreshQueue();
+  </script>
+</body>
+</html>

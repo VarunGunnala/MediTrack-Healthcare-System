@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-card" style="padding: 1.8rem 2rem; margin-bottom: 1.5rem;">
+  <h2 style="font-size: 1.6rem;">Front Desk & Reception Portal</h2>
+  <p style="margin-bottom: 0;">Patient Lookups, Status Triage, and Queue Coordination.</p>
+</div>
+
+<!-- Search Bar -->
+<div style="background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem;">
+  <form method="GET" style="display: flex; gap: 1rem;">
+    <input type="text" name="search" value="{{ search_query }}" placeholder="Search by Patient Name, ID (PAT001), or Phone..." style="flex: 1;">
+    <button type="submit" class="btn-nav-primary" style="padding: 0.6rem 1.5rem;">Search</button>
+  </form>
+</div>
+
+<div class="grid-3" style="grid-template-columns: 1.4fr 1fr;">
+  <!-- Patient Directory -->
+  <div style="background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem;">
+    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Patient Directory</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Blood Group</th>
+          <th>Emergency Contact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+          <tr>
+            <td><strong>{{ p.patient_id }}</strong></td>
+            <td>{{ p.full_name }} ({{ p.phone }})</td>
+            <td>{{ p.blood_group or 'N/A' }}</td>
+            <td>{{ p.emergency_contact or 'N/A' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Live Appointment Status Management -->
+  <div style="background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem;">
+    <h3 style="color: #0f766e; margin-bottom: 1rem;">Status Triage</h3>
+    {% for a in appointments %}
+      <form method="POST" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+        <input type="hidden" name="update_status" value="1">
+        <input type="hidden" name="appointment_id" value="{{ a.id }}">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <strong>{{ a.patient_name }} ({{ a.patient_code }})</strong>
+          <small style="color: var(--text-muted);">{{ a.appointment_time }}</small>
+        </div>
+        
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <select name="status" style="padding: 0.35rem; font-size: 0.85rem;">
+            <option value="Scheduled" {% if a.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+            <option value="Checked-In" {% if a.status == 'Checked-In' %}selected{% endif %}>Checked-In</option>
+            <option value="In-Consultation" {% if a.status == 'In-Consultation' %}selected{% endif %}>In-Consultation</option>
+            <option value="Completed" {% if a.status == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Cancelled" {% if a.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+          <button type="submit" class="btn-nav-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Update</button>
+        </div>
+      </form>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediTrack - Integrated Digital Healthcare Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="brand-container">
+      <span class="brand-icon">+</span>
+      <span class="brand-text">MediTrack<span>Home</span></span>
+    </a>
+    <div class="nav-actions">
+      {% if session.get('user_id') %}
+        <span class="badge badge-primary">
+          {{ session['user_role']|upper }}: {{ session['user_name'] }}
+        </span>
+
+        {% if session['user_role'] == 'patient' %}
+          <a href="{{ url_for('profile') }}" class="btn-nav-outline">My Medical Profile</a>
+          <a href="{{ url_for('appointments') }}" class="btn-nav-outline">Book Visit</a>
+        {% elif session['user_role'] == 'doctor' %}
+          <a href="{{ url_for('doctor_portal') }}" class="btn-nav-outline">Clinical Queue</a>
+          <a href="{{ url_for('api_key_management') }}" class="btn-nav-outline">API Keys</a>
+        {% elif session['user_role'] == 'receptionist' %}
+          <a href="{{ url_for('receptionist_portal') }}" class="btn-nav-outline">Reception Desk</a>
+          <a href="{{ url_for('api_key_management') }}" class="btn-nav-outline">API Keys</a>
+        {% elif session['user_role'] == 'admin' %}
+          <a href="{{ url_for('admin_dashboard') }}" class="btn-nav-outline">Analytics</a>
+          <a href="{{ url_for('receptionist_portal') }}" class="btn-nav-outline">Triage</a>
+          <a href="{{ url_for('api_key_management') }}" class="btn-nav-outline">API Keys</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}" class="btn-nav-primary" style="background-color: #e11d48; border-color: #e11d48;">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-nav-outline">Login</a>
+        <a href="{{ url_for('register') }}" class="btn-nav-primary">Register</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="container animate-fade">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <div id="notification-toast"></div>
+
+  <footer>
+    &copy; 2026 MediTrack Integrated Patient Care Management System. All rights reserved.
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

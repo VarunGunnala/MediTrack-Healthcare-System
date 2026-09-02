@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <h3>Add Medical Record</h3>
+    <form method="POST" style="margin-top: 1rem;">
+      <div class="form-group">
+        <label>Diagnosis</label>
+        <input type="text" name="diagnosis" required placeholder="e.g. Mild Influenza">
+      </div>
+      <div class="form-group">
+        <label>Prescription</label>
+        <input type="text" name="prescription" required placeholder="e.g. Paracetamol 500mg">
+      </div>
+      <div class="form-group">
+        <label>Additional Notes</label>
+        <textarea name="notes" rows="3" placeholder="Rest for 3 days..."></textarea>
+      </div>
+      <button type="submit" class="btn" style="width: 100%;">Save Record</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Medical History Log</h3>
+    {% if records %}
+      {% for rec in records %}
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+          <small style="color: var(--text-muted);">{{ rec.record_date }}</small>
+          <h4 style="color: #38bdf8;">{{ rec.diagnosis }}</h4>
+          <p><strong>Prescription:</strong> {{ rec.prescription }}</p>
+          {% if rec.notes %}
+            <p style="color: var(--text-muted); font-size: 0.9rem;"><strong>Notes:</strong> {{ rec.notes }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: var(--text-muted); margin-top: 1rem;">No history records found.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

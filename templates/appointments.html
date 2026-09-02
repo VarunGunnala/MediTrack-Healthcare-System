@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-layout" style="grid-template-columns: 1.1fr 1.3fr;">
+  <!-- Live Booking Card -->
+  <div class="glass-card">
+    <h3 style="color: var(--primary); margin-bottom: 1.2rem;">Book Consultation</h3>
+    <form method="POST" id="bookingForm">
+      <div class="form-group">
+        <label>Select Physician</label>
+        <select name="doctor_name" id="doctorSelect" required>
+          {% for doc, details in doctors.items() %}
+            <option value="{{ doc }}" data-dept="{{ details.dept }}">{{ doc }} ({{ details.dept }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" name="department" id="deptField" value="Cardiology" readonly style="background: #f1f5f9;">
+      </div>
+
+      <div class="form-group">
+        <label>Select Date</label>
+        <input type="date" name="appointment_date" id="dateSelect" required>
+      </div>
+
+      <div class="form-group">
+        <label>Available Time Slots (Conflict Protected)</label>
+        <div class="slots-container" id="slotsContainer">
+          <p style="color: var(--text-muted); font-size: 0.85rem; grid-column: 1/-1;">Please select a date first.</p>
+        </div>
+        <input type="hidden" name="appointment_time" id="selectedTimeSlot" required>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBooking" disabled>Confirm Reserved Slot</button>
+    </form>
+  </div>
+
+  <!-- Bookings List -->
+  <div class="glass-card">
+    <h3 style="color: var(--teal); margin-bottom: 1.2rem;">Your Confirmed Appointments</h3>
+    {% if appointments %}
+      <table>
+        <thead>
+          <tr>
+            <th>Doctor</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appt in appointments %}
+            <tr>
+              <td><strong>{{ appt.doctor_name }}</strong><br><small style="color: var(--text-muted);">{{ appt.department }}</small></td>
+              <td>{{ appt.appointment_date }}<br><span style="font-weight: 600; color: var(--primary);">{{ appt.appointment_time }}</span></td>
+              <td>
+                {% if appt.status == 'Completed' %}
+                  <span style="color: #166534; background: #dcfce7; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">Completed</span>
+                {% else %}
+                  <span style="color: #0369a1; background: #e0f2fe; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">{{ appt.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color: var(--text-muted); font-size: 0.9rem;">No scheduled appointments found.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const docSelect = document.getElementById("doctorSelect");
+  const deptField = document.getElementById("deptField");
+  const dateInput = document.getElementById("dateSelect");
+  const slotsContainer = document.getElementById("slotsContainer");
+  const hiddenTime = document.getElementById("selectedTimeSlot");
+  const submitBtn = document.getElementById("submitBooking");
+
+  // Prevent selecting past dates
+  const today = new Date().toISOString().split("T")[0];
+  dateInput.setAttribute("min", today);
+
+  function syncDepartment() {
+    const selectedOpt = docSelect.options[docSelect.selectedIndex];
+    deptField.value = selectedOpt.getAttribute("data-dept");
+  }
+
+  async function fetchSlots() {
+    const doctor = docSelect.value;
+    const date = dateInput.value;
+    hiddenTime.value = "";
+    submitBtn.disabled = true;
+
+    if (!doctor || !date) return;
+
+    slotsContainer.innerHTML = "<p style='color: var(--text-muted); font-size: 0.85rem;'>Checking live availability...</p>";
+
+    try {
+      const res = await fetch(`/api/doctor-slots?doctor_name=${encodeURIComponent(doctor)}&date=${encodeURIComponent(date)}`);
+      const data = await res.json();
+
+      slotsContainer.innerHTML = "";
+      data.slots.forEach(slot => {
+        const div = document.createElement("div");
+        div.className = `slot-pill ${slot.available ? '' : 'disabled'}`;
+        div.innerText = slot.time;
+
+        if (slot.available) {
+          div.addEventListener("click", () => {
+            document.querySelectorAll(".slot-pill").forEach(s => s.classList.remove("selected"));
+            div.classList.add("selected");
+            hiddenTime.value = slot.time;
+            submitBtn.disabled = false;
+          });
+        }
+        slotsContainer.appendChild(div);
+      });
+    } catch (e) {
+      slotsContainer.innerHTML = "<p style='color: #e11d48; font-size: 0.85rem;'>Failed to load schedule.</p>";
+    }
+  }
+
+  docSelect.addEventListener("change", () => { syncDepartment(); fetchSlots(); });
+  dateInput.addEventListener("change", fetchSlots);
+});
+</script>
+{% endblock %}

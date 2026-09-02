@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-card" style="padding: 1.5rem 2rem; margin-bottom: 1.5rem;">
+  <h2 style="font-size: 1.6rem;">Doctor Clinical Desk</h2>
+  <p style="margin-bottom: 0;">Assigned Consultations & Prescription Issuance.</p>
+</div>
+
+<div class="profile-layout" style="grid-template-columns: 1fr 1.2fr;">
+  <!-- Live Patient Queue -->
+  <div class="glass-card" style="height: fit-content;">
+    <h3 style="color: var(--primary); margin-bottom: 1.2rem;">Today's Patient Queue</h3>
+    {% if queue %}
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Slot</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in queue %}
+            <tr>
+              <td>
+                <strong>{{ item.patient_name }}</strong><br>
+                <small style="color: var(--text-muted);">{{ item.patient_code }} • {{ item.age }}y, {{ item.gender }}</small>
+              </td>
+              <td>
+                {{ item.appointment_date }}<br>
+                <span style="font-weight: 600; color: var(--text);">{{ item.appointment_time }}</span>
+              </td>
+              <td><span class="badge badge-primary">{{ item.status }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="text-align: center; padding: 2rem 0;">
+        <p style="color: var(--text-muted); font-size: 0.95rem;">No pending patients in your queue.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Consultation & Prescription Form -->
+  <div class="glass-card">
+    <h3 style="color: var(--teal); margin-bottom: 1.2rem;">Write Consultation Record</h3>
+    <form method="POST">
+      <div class="form-group">
+        <label>Select Patient</label>
+        <select name="patient_user_id" required>
+          <option value="" disabled selected>-- Choose Patient from Queue --</option>
+          {% for item in queue %}
+            <option value="{{ item.patient_user_id }}">{{ item.patient_name }} ({{ item.appointment_time }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <h4 style="margin: 1.5rem 0 0.8rem 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; font-size: 1rem;">Clinical Findings</h4>
+      
+      <div class="form-group">
+        <label>Symptoms Stated</label>
+        <input type="text" name="symptoms" required placeholder="e.g. Fever, continuous cough for 3 days">
+      </div>
+      
+      <div class="form-group">
+        <label>Observations (Optional)</label>
+        <input type="text" name="observations" placeholder="e.g. High temperature, clear lungs">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Diagnosis</label>
+          <input type="text" name="diagnosis" required placeholder="e.g. Viral Pharyngitis">
+        </div>
+        <div class="form-group">
+          <label>Treatment Plan</label>
+          <input type="text" name="treatment_plan" required placeholder="e.g. Rest, hydration">
+        </div>
+      </div>
+
+      <h4 style="margin: 1.5rem 0 0.8rem 0; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; font-size: 1rem;">Prescription (Rx)</h4>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Medicine Name</label>
+          <input type="text" name="medicine_name" required placeholder="e.g. Paracetamol">
+        </div>
+        <div class="form-group">
+          <label>Dosage</label>
+          <input type="text" name="dosage" required placeholder="e.g. 650mg">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="text" name="duration" required placeholder="e.g. 5 days">
+        </div>
+        <div class="form-group">
+          <label>Instructions (Optional)</label>
+          <input type="text" name="instructions" placeholder="e.g. Take after meals">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" style="margin-top: 1rem;">Finalize Consultation</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

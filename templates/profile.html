@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-layout">
+  <!-- Interactive Sidebar -->
+  <div class="profile-sidebar">
+    <img src="{{ user.avatar_url }}" alt="Profile Photo" class="profile-avatar">
+    <h3 style="font-size: 1.1rem; text-align: center;">{{ user.full_name }}</h3>
+    <span style="color: var(--teal); font-weight: 700; font-size: 0.85rem;">{{ user.patient_id }}</span>
+
+    <!-- Personal Photo Selector -->
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 1rem; width: 100%;">
+      <input type="hidden" name="upload_avatar" value="1">
+      <label style="font-size: 0.75rem; color: var(--text-muted);">Change Photo</label>
+      <input type="file" name="avatar_file" accept="image/*" required style="font-size: 0.75rem; padding: 0.3rem;">
+      <button type="submit" class="btn-submit" style="padding: 0.35rem; font-size: 0.75rem; margin-top: 0.4rem;">Upload</button>
+    </form>
+
+    <!-- Navigation Menu -->
+    <div class="sidebar-menu">
+      <button class="sidebar-link active" onclick="switchTab('tab-details')">📋 Profile Details</button>
+      <button class="sidebar-link" onclick="switchTab('tab-appts')">📅 My Bookings ({{ appointments|length }})</button>
+      <button class="sidebar-link" onclick="switchTab('tab-history')">🩺 Medical History</button>
+      <button class="sidebar-link" onclick="switchTab('tab-rx')">💊 Prescriptions</button>
+      <button class="sidebar-link" onclick="switchTab('tab-logs')">🛡️ Account Activity</button>
+    </div>
+  </div>
+
+  <!-- Main Content Panes -->
+  <div class="glass-card">
+    <!-- Tab 1: Profile Details -->
+    <div id="tab-details" class="tab-pane active">
+      <h3 style="color: var(--primary); margin-bottom: 1.2rem;">Medical Record Profile</h3>
+      <form method="POST">
+        <input type="hidden" name="update_profile" value="1">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Blood Group</label>
+            <select name="blood_group">
+              {% for bg in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] %}
+                <option value="{{ bg }}" {% if profile.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Emergency Contact</label>
+            <input type="text" name="emergency_contact" value="{{ profile.emergency_contact or '' }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Known Allergies</label>
+          <input type="text" name="allergies" value="{{ profile.allergies or '' }}" placeholder="e.g. Penicillin">
+        </div>
+
+        <div class="form-group">
+          <label>Chronic Diseases</label>
+          <input type="text" name="existing_diseases" value="{{ profile.existing_diseases or '' }}" placeholder="e.g. Hypertension">
+        </div>
+
+        <div class="form-group">
+          <label>Current Medications</label>
+          <input type="text" name="current_medications" value="{{ profile.current_medications or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label>Insurance Policy ID</label>
+          <input type="text" name="insurance_details" value="{{ profile.insurance_details or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label>Surgical History / Clinical Notes</label>
+          <textarea name="medical_history" rows="3">{{ profile.medical_history or '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Save Medical Profile</button>
+      </form>
+    </div>
+
+    <!-- Tab 2: Bookings -->
+    <div id="tab-appts" class="tab-pane">
+      <h3 style="color: var(--teal); margin-bottom: 1rem;">Appointment Schedule</h3>
+      <table>
+        <thead><tr><th>Doctor</th><th>Date & Time</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for a in appointments %}
+            <tr>
+              <td><strong>{{ a.doctor_name }}</strong> ({{ a.department }})</td>
+              <td>{{ a.appointment_date }} at {{ a.appointment_time }}</td>
+              <td>{{ a.status }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 3: History -->
+    <div id="tab-history" class="tab-pane">
+      <h3 style="color: var(--primary); margin-bottom: 1rem;">Consultation Timeline</h3>
+      {% for h in history %}
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+          <div style="display:flex; justify-content:space-between;">
+            <strong>{{ h.diagnosis }}</strong>
+            <small style="color:var(--text-muted);">{{ h.consultation_date }}</small>
+          </div>
+          <p style="font-size:0.88rem; color:#334155; margin-top:0.3rem;">Symptoms: {{ h.symptoms }}</p>
+          <p style="font-size:0.88rem; color:#334155;">Treatment: {{ h.treatment_plan }}</p>
+          <a href="{{ url_for('download_prescription_pdf', consult_id=h.id) }}" class="btn-nav-outline" style="font-size:0.75rem; padding:0.2rem 0.5rem; display:inline-block; margin-top:0.4rem;">Download PDF Report</a>
+        </div>
+      {% else %}
+        <p style="color:var(--text-muted);">No past consultation records.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Tab 4: Prescriptions -->
+    <div id="tab-rx" class="tab-pane">
+      <h3 style="color: var(--teal); margin-bottom: 1rem;">Active Medications</h3>
+      <table>
+        <thead><tr><th>Medicine</th><th>Dosage</th><th>Duration</th><th>Instructions</th></tr></thead>
+        <tbody>
+          {% for p in prescriptions %}
+            <tr>
+              <td><strong>{{ p.medicine_name }}</strong></td>
+              <td>{{ p.dosage }}</td>
+              <td>{{ p.duration }}</td>
+              <td>{{ p.instructions or '-' }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" style="color:var(--text-muted);">No active prescriptions.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 5: Audit Activity -->
+    <div id="tab-logs" class="tab-pane">
+      <h3 style="color: var(--text); margin-bottom: 1rem;">Security & Activity Log</h3>
+      <table>
+        <thead><tr><th>Timestamp</th><th>Action</th><th>IP Address</th></tr></thead>
+        <tbody>
+          {% for l in logs %}
+            <tr>
+              <td><small>{{ l.timestamp }}</small></td>
+              <td><strong>{{ l.action }}</strong></td>
+              <td><code>{{ l.ip_address }}</code></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+{% endblock %}

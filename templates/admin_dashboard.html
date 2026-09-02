@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-card" style="padding: 1.8rem 2rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h2 style="font-size: 1.6rem;">Admin Analytics & Operational Control</h2>
+    <p style="margin-bottom: 0;">Comprehensive metrics, audit log monitoring, and reporting.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('export_appointments_csv') }}" class="btn-hero" style="font-size: 0.9rem;">Export CSV Report</a>
+  </div>
+</div>
+
+<!-- Key Stat Cards -->
+<div class="grid-3" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+  <div style="background: white; border-radius: 10px; padding: 1.2rem; border-left: 4px solid #0284c7; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">REGISTERED PATIENTS</span>
+    <h3 style="font-size: 1.8rem; color: #0284c7; margin-top: 0.3rem;">{{ stats.total_patients }}</h3>
+  </div>
+
+  <div style="background: white; border-radius: 10px; padding: 1.2rem; border-left: 4px solid #0f766e; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">TOTAL APPOINTMENTS</span>
+    <h3 style="font-size: 1.8rem; color: #0f766e; margin-top: 0.3rem;">{{ stats.total_appts }}</h3>
+  </div>
+
+  <div style="background: white; border-radius: 10px; padding: 1.2rem; border-left: 4px solid #16a34a; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">COMPLETED VISITS</span>
+    <h3 style="font-size: 1.8rem; color: #16a34a; margin-top: 0.3rem;">{{ stats.completed_appts }}</h3>
+  </div>
+
+  <div style="background: white; border-radius: 10px; padding: 1.2rem; border-left: 4px solid #8b5cf6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">CONSULTATIONS HELD</span>
+    <h3 style="font-size: 1.8rem; color: #8b5cf6; margin-top: 0.3rem;">{{ stats.total_consults }}</h3>
+  </div>
+</div>
+
+<!-- Audit Log Table -->
+<div style="background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 1.5rem;">
+  <h3 style="color: #1e293b; margin-bottom: 1rem;">Security & Activity Audit Logs</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>User ID</th>
+        <th>Action</th>
+        <th>Details</th>
+        <th>IP Address</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+        <tr>
+          <td><small style="color: var(--text-muted);">{{ log.timestamp }}</small></td>
+          <td>{{ log.user_id or 'Anonymous' }}</td>
+          <td><strong>{{ log.action }}</strong></td>
+          <td>{{ log.details or '-' }}</td>
+          <td><code>{{ log.ip_address }}</code></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-card">
+  <h1>Integrated Digital Healthcare Management</h1>
+  <p>"To ensure good health: eat lightly, breathe deeply, live moderately, cultivate cheerfulness, and maintain an interest in life."</p>
+  {% if not session.get('user_id') %}
+    <a href="{{ url_for('register') }}" class="btn-nav-primary" style="background: white; color: var(--primary); padding: 0.75rem 1.6rem; font-size: 1rem;">Get Started Today</a>
+  {% else %}
+    <a href="{{ url_for('profile') }}" class="btn-nav-primary" style="background: white; color: var(--primary); padding: 0.75rem 1.6rem; font-size: 1rem;">Go to My Portal</a>
+  {% endif %}
+</div>
+
+<!-- Interactive Health Advice Banner -->
+<div class="glass-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1.2rem; margin-bottom: 2rem;">
+  <strong>💡 Daily Health Advice:</strong>
+  <span id="healthTipText">Staying hydrated boosts your immune system, maintains kidney function, and improves cognitive alertness.</span>
+</div>
+
+<!-- Specialist Directory with Real Profile Images -->
+<h2 style="font-size: 1.4rem; color: var(--text); margin-bottom: 1rem;">Consult Our Department Specialists</h2>
+<div class="grid-3" style="margin-bottom: 2rem;">
+  {% for name, doc in doctors.items() %}
+    <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+      <img src="{{ doc.avatar }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 0.8rem;">
+      <h3 style="font-size: 1.1rem; color: #0f172a;">{{ name }}</h3>
+      <p style="color: var(--teal); font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">{{ doc.dept }}</p>
+      <a href="{{ url_for('appointments') }}" class="btn-nav-outline" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Book Consultation</a>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Interactive Schemes -->
+<h2 style="font-size: 1.4rem; color: var(--text); margin-bottom: 1rem;">National & Institutional Health Schemes</h2>
+<div class="grid-3">
+  <div class="glass-card">
+    <h3 style="color: var(--teal); margin-bottom: 0.5rem;">Universal Health Coverage</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Comprehensive health insurance providing cashless secondary and tertiary hospitalization benefits up to $5,000 annually per registered family.</p>
+  </div>
+  <div class="glass-card">
+    <h3 style="color: var(--teal); margin-bottom: 0.5rem;">Preventive Care Initiative</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Zero cost out-of-pocket for annual wellness checkups, routine diabetic monitoring, and cardiovascular screenings for registered members.</p>
+  </div>
+  <div class="glass-card">
+    <h3 style="color: var(--teal); margin-bottom: 0.5rem;">Maternal & Infant Wellness</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Dedicated medical care, routine immunization tracking, and direct nutritional guidance for expectant mothers and infants.</p>
+  </div>
+</div>
+{% endblock %}
